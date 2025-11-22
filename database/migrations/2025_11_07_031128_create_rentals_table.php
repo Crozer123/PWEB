@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('rentals', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->date('rental_date');
             $table->date('return_date');
             $table->decimal('total_price',12,2)->default(0);
             $table->enum('status',['pending','rented','returned','canceled'])->default('pending');
+            $table->softDeletes();
             $table->timestamps();
 
         });

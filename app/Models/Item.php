@@ -12,6 +12,7 @@ class Item extends Model
         'description',
         'rental_price',
         'stock',
+        'image',
     ];
 
     public function category()

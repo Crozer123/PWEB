@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('rental_details', function (Blueprint $table) {
-            $table->unsignedInteger('rental_id');
+            $table->unsignedBigInteger('rental_id');
             $table->foreign('rental_id')->references('id')->on('rentals')->onDelete('cascade');
-            $table->unsignedInteger('item_id');
+            $table->unsignedBigInteger('item_id');
             $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
             $table->unsignedSmallInteger('quantity');
             $table->decimal('subtotal_price',12,2);
