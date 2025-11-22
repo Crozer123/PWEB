@@ -21,7 +21,6 @@
 
             @php
                 $hour = now()->format('H');
-
                 if ($hour < 12) {
                     $greeting = 'Selamat Pagi';
                     $icon = 'fa-mug-hot';
@@ -149,31 +148,34 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50">
-                        @foreach ($recentRentals as $r)
-                        <tr class="hover:bg-slate-50/80 transition group cursor-pointer">
+                        @foreach ($recentRentals as $rental)
+                        <tr class="hover:bg-slate-50/80 transition group cursor-pointer" onclick="window.location='{{ route('admin.rentals.show', $rental->id) }}'">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-4">
                                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-700 flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">
-                                        {{ substr($r->user->name, 0, 2) }}
+                                        {{ substr($rental->user->name ?? 'User', 0, 2) }}
                                     </div>
                                     <div>
-                                        <div class="font-bold text-slate-700">{{ $r->user->name }}</div>
+                                        <div class="font-bold text-slate-700">{{ $rental->user->name ?? 'Unknown User' }}</div>
                                         <div class="text-[11px] text-slate-400">
-                                            {{ $r->created_at->diffForHumans() }}
+                                            {{ $rental->created_at->diffForHumans() }}
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="px-3 py-1 rounded-full text-[10px] font-bold border 
-                                    {{ $r->status == 'active' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
-                                      ($r->status == 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-500') }}">
-                                    {{ ucfirst($r->status) }}
+                                    {{ $rental->status == 'rented' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
+                                      ($rental->status == 'returned' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                      ($rental->status == 'canceled' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-amber-50 text-amber-600 border-amber-100')) }}">
+                                    {{ ucfirst($rental->status == 'rented' ? 'Active' : $rental->status) }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="font-bold text-slate-800">{{ $r->items->count() }}</span> Unit
+                                {{-- Menggunakan details->sum('quantity') karena relasi yang benar adalah details --}}
+                                <span class="font-bold text-slate-800">{{ $rental->details->sum('quantity') }}</span> Unit
                             </td>
+                        </tr>
                         @endforeach
                     </tbody>
                 </table>
@@ -183,7 +185,6 @@
 
         {{-- Low Stock --}}
         <div class="space-y-8">
-
             <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-slate-800">Stok Menipis</h3>
@@ -218,11 +219,7 @@
                     </a>
                 @endif
             </div>
-
         </div>
-
     </div>
-
 </div>
-
 @endsection

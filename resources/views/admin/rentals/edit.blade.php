@@ -20,9 +20,23 @@
         <div class="mb-4">
             <label class="font-medium block mb-1">Status Rental</label>
             <select name="status" class="p-2 border rounded w-full">
-                <option value="active" {{ $rental->status=='active' ? 'selected' : '' }}>Active</option>
-                <option value="returned" {{ $rental->status=='returned' ? 'selected' : '' }}>Returned</option>
-                <option value="cancelled" {{ $rental->status=='cancelled' ? 'selected' : '' }}>Cancelled</option>
+                {{-- PERBAIKAN: Ubah 'active' jadi 'rented' --}}
+                <option value="rented" {{ $rental->status=='rented' ? 'selected' : '' }}>
+                    Active (Sedang Dipinjam)
+                </option>
+                
+                <option value="returned" {{ $rental->status=='returned' ? 'selected' : '' }}>
+                    Returned (Sudah Dikembalikan)
+                </option>
+                
+                {{-- PERBAIKAN: Ubah 'cancelled' jadi 'canceled' (L satu) --}}
+                <option value="canceled" {{ $rental->status=='canceled' ? 'selected' : '' }}>
+                    Cancelled (Dibatalkan)
+                </option>
+
+                <option value="pending" {{ $rental->status=='pending' ? 'selected' : '' }}>
+                    Pending
+                </option>
             </select>
         </div>
 

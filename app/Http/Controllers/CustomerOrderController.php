@@ -86,50 +86,86 @@ class CustomerOrderController extends Controller
         return view('customer.order.create-single', compact('item'));
     }
 
-
-
     public function store(StoreRentalRequest $request)
     {
         $validated = $request->validated();
-        $cart = session()->get('cart', []);
+        
+        // 1. Tentukan sumber data: Apakah dari Form Langsung (Single) atau Session (Cart)?
+        $itemsToProcess = [];
 
-        if (!$cart || count($cart) === 0) {
-            return back()->with('error', 'Keranjang kosong.');
+        if ($request->has('items') && is_array($request->items)) {
+            // KASUS A: Sewa Langsung (Klik "Sewa Sekarang")
+            foreach ($request->items as $val) {
+                $itemsToProcess[$val['item_id']] = [
+                    'quantity' => $val['quantity']
+                ];
+            }
+        } else {
+            // KASUS B: Checkout dari Keranjang
+            $cart = session()->get('cart', []);
+            if (!$cart || count($cart) === 0) {
+                return back()->with('error', 'Keranjang kosong.');
+            }
+            // Format ulang data session biar seragam
+            foreach ($cart as $id => $details) {
+                $itemsToProcess[$id] = [
+                    'quantity' => $details['quantity']
+                ];
+            }
         }
 
+        // 2. Validasi Stok Dulu (Sebelum Simpan Apapun)
+        foreach ($itemsToProcess as $itemId => $data) {
+            $item = Item::find($itemId);
+            if (!$item || $item->stock < $data['quantity']) {
+                return back()->with('error', "Stok untuk {$item->name} tidak cukup.");
+            }
+        }
+
+        // 3. Simpan Data Rental (Header)
+        // Kita set total_price 0 dulu, nanti diupdate setelah hitung detail
         $rental = Rental::create([
             'user_id'      => Auth::id(),
             'rental_date'  => $validated['rental_date'],
             'return_date'  => $validated['return_date'],
             'status'       => 'pending',
+            'total_price'  => 0 
         ]);
 
-        foreach ($cart as $itemId => $data) {
+        $grandTotal = 0;
 
+        // 4. Simpan Detail Barang & Hitung Harga
+        foreach ($itemsToProcess as $itemId => $data) {
             $item = Item::find($itemId);
-
-            if ($item->stock < $data['quantity']) {
-                return back()->with('error', "Stok untuk {$item->name} tidak cukup.");
-            }
+            
+            // Hitung subtotal per item
+            $subtotal = $item->rental_price * $data['quantity'];
+            $grandTotal += $subtotal;
 
             RentalDetail::create([
-                'rental_id' => $rental->id,
-                'item_id'   => $item->id,
-                'quantity'  => $data['quantity'],
+                'rental_id'      => $rental->id,
+                'item_id'        => $item->id,
+                'quantity'       => $data['quantity'],
+                'subtotal_price' => $subtotal, // <--- INI YANG TADINYA KURANG
             ]);
 
+            // Kurangi stok barang
             $item->decrement('stock', $data['quantity']);
         }
 
-        session()->forget('cart');
+        // 5. Update Total Harga di Tabel Rental
+        $rental->update(['total_price' => $grandTotal]);
 
-           return view('customer.order.checkout', [
-        'rental' => $rental,
-        'success' => true,
-        'cart' => []
-]);
-    }
+        // 6. Hapus Keranjang (Hanya jika checkout berasal dari keranjang)
+        if (!$request->has('items')) {
+            session()->forget('cart');
+        }
 
+        // Redirect ke halaman history rental dengan pesan sukses
+        return redirect()
+            ->route('customer.rentals.history')
+            ->with('success', 'Penyewaan berhasil dibuat! Menunggu konfirmasi admin.');
+            }
     public function success(Rental $rental)
     {
         if ($rental->user_id !== Auth::id()) {

@@ -93,21 +93,34 @@
         <div class="mt-8 border-t pt-6">
             <h3 class="mb-4 text-xl font-bold text-gray-800">Update Status Rental</h3>
 
-            <form method="POST" action="{{ route('admin.rentals.update', $rental->id) }}" class="flex items-center space-x-3">
-                @csrf
-                @method('PUT')
+        <form method="POST" action="{{ route('admin.rentals.update', $rental->id) }}" class="flex items-center space-x-3">
+            @csrf
+            @method('PUT')
+            
+            <select name="status" class="p-2 border border-gray-300 rounded-lg focus:border-emerald-500 focus:ring-emerald-500">
+                {{-- PERBAIKAN: Value harus 'rented' (bukan active) --}}
+                <option value="rented" {{ $rental->status=='rented' ? 'selected' : '' }}>
+                    Active (Sedang Dipinjam)
+                </option>
                 
-                <select name="status" class="p-2 border border-gray-300 rounded-lg focus:border-emerald-500 focus:ring-emerald-500">
-                    <option value="active" {{ $rental->status=='active' ? 'selected' : '' }}>Active (Barang Dipinjam)</option>
-                    <option value="returned" {{ $rental->status=='returned' ? 'selected' : '' }}>Returned (Barang Dikembalikan)</option>
-                    <option value="cancelled" {{ $rental->status=='cancelled' ? 'selected' : '' }}>Cancelled (Dibatalkan)</option>
-                    <option value="pending" {{ $rental->status=='pending' ? 'selected' : '' }}>Pending (Menunggu Persetujuan)</option>
-                </select>
+                <option value="returned" {{ $rental->status=='returned' ? 'selected' : '' }}>
+                    Returned (Sudah Dikembalikan)
+                </option>
+                
+                {{-- PERBAIKAN: Value harus 'canceled' (satu L) --}}
+                <option value="canceled" {{ $rental->status=='canceled' ? 'selected' : '' }}>
+                    Cancelled (Dibatalkan)
+                </option>
+                
+                <option value="pending" {{ $rental->status=='pending' ? 'selected' : '' }}>
+                    Pending (Menunggu Persetujuan)
+                </option>
+            </select>
 
-                <button class="px-4 py-2 bg-emerald-600 text-white rounded-lg transition-colors duration-150 hover:bg-emerald-700 font-medium">
-                    Simpan Perubahan
-                </button>
-            </form>
+            <button class="px-4 py-2 bg-emerald-600 text-white rounded-lg transition-colors duration-150 hover:bg-emerald-700 font-medium">
+                Simpan Perubahan
+            </button>
+        </form>
         </div>
     @else
         <div class="mt-8 border-t pt-6 p-4 bg-green-50 rounded-lg border-green-200">

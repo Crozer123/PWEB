@@ -15,12 +15,12 @@ class AdminController extends Controller
     public function dashboard()
     {
         $totalItems     = Item::count();
-        $activeRentals  = Rental::where('status', 'active')->count();
+        $activeRentals  = Rental::where('status', 'rented')->count();
         $lowStockList   = Item::where('stock', '<', 5)->get();
         $lowStockCount  = $lowStockList->count();
         $totalUsers     = User::where('role', 'customer')->count();
 
-        $recentRentals = Rental::with(['user', 'items'])
+        $recentRentals = Rental::with(['user', 'details.item'])
             ->latest()
             ->take(5)
             ->get();

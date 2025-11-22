@@ -8,6 +8,8 @@ class RentalDetail extends Model
 {
     protected $table = 'rental_details'; 
 
+    public $timestamps = false;
+
     protected $fillable = [
         'rental_id',
         'item_id',
