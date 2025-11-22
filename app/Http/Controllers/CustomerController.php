@@ -17,7 +17,7 @@ class CustomerController extends Controller
     public function index()
     {
         $activeRentals = Rental::where('user_id', Auth::id())
-            ->where('status', 'active')
+            ->where('status', 'rented')
             ->count();
         $recentRentals = Rental::where('user_id', Auth::id())
             ->with('details.item') 

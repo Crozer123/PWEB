@@ -90,4 +90,5 @@ Route::middleware(['auth', 'customer'])
 
         Route::put('/password/update', [CustomerController::class, 'updatePassword'])->name('password.update');
         Route::get('/cara-sewa', fn() => view('customer.carasewa'))->name('carasewa');
+        Route::get('/order/payment/{rental}', [CustomerOrderController::class, 'payment'])->name('customer.order.payment');
     });

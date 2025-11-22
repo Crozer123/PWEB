@@ -139,7 +139,7 @@
                         </td>
 
                         <td class="px-6 py-4 text-right">
-                            <span class="font-bold text-slate-800 text-base">{{ $r->items->count() }}</span>
+                            <span class="font-bold text-slate-800 text-base">{{ $r->details->sum('quantity') }}</span>
                             <span class="text-xs text-slate-400">Unit</span>
                         </td>
                     </tr>

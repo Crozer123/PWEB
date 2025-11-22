@@ -14,7 +14,7 @@ class UpdateRentalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|in:pending,active,returned,cancelled',
+            'status' => 'required|in:pending,rented,returned,canceled',
         ];
     }
 

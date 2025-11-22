@@ -14,6 +14,7 @@ class Rental extends Model
         'return_date',
         'total_price',
         'status',
+        'snap_token',
     ];
 
     public function user()

@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Midtrans\Config;
+use Midtrans\Snap;
 use App\Models\Rental;
 use App\Models\RentalDetail;
 use App\Models\Item;
@@ -89,56 +90,43 @@ class CustomerOrderController extends Controller
     public function store(StoreRentalRequest $request)
     {
         $validated = $request->validated();
-        
-        // 1. Tentukan sumber data: Apakah dari Form Langsung (Single) atau Session (Cart)?
-        $itemsToProcess = [];
 
+        // --- 1. AMBIL ITEM DARI CART ATAU FORM ---
+        $itemsToProcess = [];
         if ($request->has('items') && is_array($request->items)) {
-            // KASUS A: Sewa Langsung (Klik "Sewa Sekarang")
             foreach ($request->items as $val) {
-                $itemsToProcess[$val['item_id']] = [
-                    'quantity' => $val['quantity']
-                ];
+                $itemsToProcess[$val['item_id']] = ['quantity' => $val['quantity']];
             }
         } else {
-            // KASUS B: Checkout dari Keranjang
             $cart = session()->get('cart', []);
-            if (!$cart || count($cart) === 0) {
-                return back()->with('error', 'Keranjang kosong.');
-            }
-            // Format ulang data session biar seragam
+            if (!$cart || count($cart) === 0) return back()->with('error', 'Keranjang kosong.');
             foreach ($cart as $id => $details) {
-                $itemsToProcess[$id] = [
-                    'quantity' => $details['quantity']
-                ];
+                $itemsToProcess[$id] = ['quantity' => $details['quantity']];
             }
         }
 
-        // 2. Validasi Stok Dulu (Sebelum Simpan Apapun)
+        // --- 2. VALIDASI STOK ---
         foreach ($itemsToProcess as $itemId => $data) {
             $item = Item::find($itemId);
             if (!$item || $item->stock < $data['quantity']) {
-                return back()->with('error', "Stok untuk {$item->name} tidak cukup.");
+                return back()->with('error', "Stok {$item->name} kurang.");
             }
         }
 
-        // 3. Simpan Data Rental (Header)
-        // Kita set total_price 0 dulu, nanti diupdate setelah hitung detail
+        // --- 3. SIMPAN DATA RENTAL (HEADER) ---
         $rental = Rental::create([
             'user_id'      => Auth::id(),
             'rental_date'  => $validated['rental_date'],
             'return_date'  => $validated['return_date'],
             'status'       => 'pending',
-            'total_price'  => 0 
+            'total_price'  => 0,
         ]);
 
         $grandTotal = 0;
 
-        // 4. Simpan Detail Barang & Hitung Harga
+        // --- 4. SIMPAN DETAIL BARANG ---
         foreach ($itemsToProcess as $itemId => $data) {
             $item = Item::find($itemId);
-            
-            // Hitung subtotal per item
             $subtotal = $item->rental_price * $data['quantity'];
             $grandTotal += $subtotal;
 
@@ -146,26 +134,61 @@ class CustomerOrderController extends Controller
                 'rental_id'      => $rental->id,
                 'item_id'        => $item->id,
                 'quantity'       => $data['quantity'],
-                'subtotal_price' => $subtotal, // <--- INI YANG TADINYA KURANG
+                'subtotal_price' => $subtotal,
             ]);
 
-            // Kurangi stok barang
             $item->decrement('stock', $data['quantity']);
         }
 
-        // 5. Update Total Harga di Tabel Rental
+        // Update Total Harga
         $rental->update(['total_price' => $grandTotal]);
 
-        // 6. Hapus Keranjang (Hanya jika checkout berasal dari keranjang)
-        if (!$request->has('items')) {
-            session()->forget('cart');
-        }
+        // Hapus Keranjang
+        if (!$request->has('items')) session()->forget('cart');
 
-        // Redirect ke halaman history rental dengan pesan sukses
-        return redirect()
-            ->route('customer.rentals.history')
-            ->with('success', 'Penyewaan berhasil dibuat! Menunggu konfirmasi admin.');
-            }
+        // --- 5. INTEGRASI MIDTRANS ---
+
+        // Konfigurasi Midtrans
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        // Data Transaksi untuk Midtrans
+        $params = [
+            'transaction_details' => [
+                'order_id' => 'RENTAL-' . $rental->id . '-' . rand(),
+                'gross_amount' => (int) $rental->total_price,
+            ],
+            'customer_details' => [
+                'first_name' => Auth::user()->name,
+                'email' => Auth::user()->email,
+            ],
+        ];
+
+        try {
+            // Minta Snap Token
+            $snapToken = Snap::getSnapToken($params);
+
+            // Simpan token ke database
+            $rental->snap_token = $snapToken;
+            $rental->save();
+
+            // Redirect ke halaman pembayaran (yang akan kita buat di langkah 4)
+            return redirect()->route('customer.order.payment', $rental->id);
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    public function payment(Rental $rental)
+    {
+        if ($rental->user_id !== Auth::id()) {
+            abort(403);
+        }
+        return view('customer.order.payment', compact('rental'));
+    }
     public function success(Rental $rental)
     {
         if ($rental->user_id !== Auth::id()) {
