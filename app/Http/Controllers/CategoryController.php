@@ -1,38 +1,49 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Tampilkan daftar kategori.
      */
     public function index()
     {
-        $category = Category::orderBy('id','desc')->paginate(10);
-        return view('category.index',compact('category'));
-    }   
+        $categories = Category::orderBy('id', 'desc')->paginate(10);
+        // Kita arahkan ke folder admin/categories
+        return view('admin.categories.index', compact('categories'));
+    }
 
     /**
-     * Show the form for creating a new resource.
+     * Form tambah kategori.
      */
     public function create()
     {
-        return view('category.form');
+        return view('admin.categories.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan kategori baru ke database.
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name',
+        ]);
+
+        Category::create($validated);
+
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil ditambahkan!');
     }
 
     /**
-     * Display the specified resource.
+     * (Tidak dipakai di admin, biasanya langsung edit)
      */
     public function show(string $id)
     {
@@ -40,26 +51,41 @@ class CategoryController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Form edit kategori.
      */
-    public function edit(string $id)
+    public function edit(Category $category)
     {
-        //
+        return view('admin.categories.edit', compact('category'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update kategori di database.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Category $category)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+        ]);
+
+        $category->update($validated);
+
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil diperbarui!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hapus kategori.
      */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        //
+        // Cek apakah kategori sedang dipakai barang? (Opsional, biar aman)
+        if ($category->items()->count() > 0) {
+            return back()->with('error', 'Gagal hapus! Kategori ini masih memiliki barang.');
+        }
+
+        $category->delete();
+
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Kategori berhasil dihapus!');
     }
 }

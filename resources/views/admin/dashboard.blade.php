@@ -21,6 +21,7 @@
 
             @php
                 $hour = now()->format('H');
+                $hour = now()->setTimezone('Asia/Jakarta')->format('H');
                 if ($hour < 12) {
                     $greeting = 'Selamat Pagi';
                     $icon = 'fa-mug-hot';

@@ -35,7 +35,7 @@
                 @if ($rental->returned_at)
                 <p class="text-gray-600 col-span-2">
                     <strong>Dikembalikan Pada:</strong> 
-                    <span class="text-emerald-600 font-medium">{{ \Carbon\Carbon::parse($rental->returned_at)->format('d M Y H:i') }}</span>
+                    <span class="text-emerald-600 font-medium">{{ \Carbon\Carbon::parse($rental->returned_at)->format('d M Y') }}</span>
                 </p>
                 @endif
 
@@ -80,7 +80,7 @@
                     <tr>
                         <td class="py-3 px-4 font-medium text-gray-900">{{ $d->item->name }}</td>
                         <td class="px-4 text-gray-700">{{ $d->quantity }}</td>
-                        <td class="px-4 text-gray-700">Rp {{ number_format($d->item->price_per_day ?? 0, 0, ',', '.') }}</td>
+                        <td class="px-4 text-gray-700">Rp {{ number_format($d->item->rental_price, 0, ',', '.') }}</td>
                         <td class="px-4 font-semibold text-gray-800">Rp {{ number_format($d->subtotal_price, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach

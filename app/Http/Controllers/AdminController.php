@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\AdminUpdateRequest;
+use App\Http\Requests\UpdateAdminRequest;
 use App\Models\Item;
 use App\Models\User;
 use App\Models\Rental;
@@ -40,7 +40,7 @@ class AdminController extends Controller
         return view('admin.profile');
     }
 
-    public function updateProfile(AdminUpdateRequest $request)
+    public function updateProfile(UpdateAdminRequest $request)
     {
         $user = Auth::user();
         $data = $request->validated();

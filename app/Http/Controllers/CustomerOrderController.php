@@ -149,8 +149,8 @@ class CustomerOrderController extends Controller
         // --- 5. INTEGRASI MIDTRANS ---
 
         // Konfigurasi Midtrans
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION');
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production');
         Config::$isSanitized = true;
         Config::$is3ds = true;
 
@@ -169,7 +169,7 @@ class CustomerOrderController extends Controller
         try {
             // Minta Snap Token
             $snapToken = Snap::getSnapToken($params);
-
+            
             // Simpan token ke database
             $rental->snap_token = $snapToken;
             $rental->save();
@@ -182,11 +182,58 @@ class CustomerOrderController extends Controller
         }
     }
 
-    public function payment(Rental $rental)
+    public function showPayment(Rental $rental)
     {
-        if ($rental->user_id !== Auth::id()) {
-            abort(403);
+        // 1. Cek Keamanan: Pastikan yang bayar adalah pemilik rental
+        if ($rental->user_id !== auth()->id()) {
+            abort(403, 'Anda tidak memiliki akses ke data pembayaran ini.');
         }
+
+        // 2. Cek apakah Snap Token sudah ada di database?
+        // Jika belum ada, kita buatkan baru (menggunakan logika Midtrans)
+        if (empty($rental->snap_token)) {
+            
+            // Konfigurasi Midtrans (Server Key sudah di-load oleh Middleware, 
+            // tapi kita set lagi di sini untuk memastikan aman)
+            Config::$serverKey = config('services.midtrans.server_key');
+            Config::$isProduction = config('services.midtrans.is_production');
+            Config::$isSanitized = config('services.midtrans.is_sanitized');
+            Config::$is3ds = config('services.midtrans.is_3ds');
+
+            // Siapkan Parameter (Ganti data 'Yoga' & '10000' jadi Data Asli)
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $rental->id . '-' . time(), // Order ID unik (ID Rental + Timestamp)
+                    'gross_amount' => (int) $rental->total_price, // Harga asli dari database
+                ],
+                'customer_details' => [
+                    'first_name' => auth()->user()->name, // Nama user yang login
+                    'email' => auth()->user()->email,
+                ],
+                'item_details' => [
+                    [
+                        'id' => $rental->item_id,
+                        'price' => (int) $rental->total_price,
+                        'quantity' => 1,
+                        'name' => 'Sewa Produk #' . $rental->item_id,
+                    ]
+                ]
+            ];
+
+            try {
+                // Generate Token
+                $snapToken = Snap::getSnapToken($params);
+
+                // Simpan token ke database rental
+                $rental->snap_token = $snapToken;
+                $rental->save();
+
+            } catch (\Exception $e) {
+                return back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
+            }
+        }
+
+        // 3. Tampilkan View (Token dikirim lewat variable $rental)
         return view('customer.order.payment', compact('rental'));
     }
     public function success(Rental $rental)

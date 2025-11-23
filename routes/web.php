@@ -89,6 +89,19 @@ Route::middleware(['auth', 'customer'])
         });
 
         Route::put('/password/update', [CustomerController::class, 'updatePassword'])->name('password.update');
-        Route::get('/cara-sewa', fn() => view('customer.carasewa'))->name('carasewa');
-        Route::get('/order/payment/{rental}', [CustomerOrderController::class, 'payment'])->name('customer.order.payment');
+        Route::get('artikel/cara-sewa', fn() => view('customer.artikel.carasewa'))->name('artikel.carasewa');
+        Route::get('/artikel/pengembalian', function () {
+            return view('customer.artikel.pengembalian');
+        })->name('artikel.pengembalian');
+
+        Route::middleware(['midtrans_config'])->group(function () {
+            
+            // 1. Route Generate Token (Opsional jika pakai controller showPayment)
+            Route::post('/get-snap-token', [CustomerOrderController::class, 'getSnapToken']);
+            
+            // 2. Route Halaman Pembayaran (SUDAH DIPERBAIKI)
+            // Mengarah ke Controller 'showPayment' agar data $rental & Snap Token terkirim ke view
+            Route::get('/payment/{rental}', [CustomerOrderController::class, 'showPayment'])
+                ->name('payment.show');
+        });
     });

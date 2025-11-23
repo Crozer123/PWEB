@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Cara Sewa - Foresta Adventure')
+@section('title', 'Cara Sewa - For Rest Adventure')
 
 @section('content')
 
@@ -11,28 +11,19 @@
         <div class="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-slate-900/40"></div>
 
         <div class="relative h-full max-w-7xl mx-auto px-6 lg:px-8 flex flex-col justify-center">
-            <span class="bg-white text-gray-800 px-4 py-2 rounded-lg font-semibold text-sm inline-block mb-4">
-                Bantuan
-            </span>
-
             <h1 class="text-white text-5xl font-bold mb-4">
-                Cara Pemesanan di Foresta Adventure
+                Cara Pemesanan di For Rest Adventure
             </h1>
 
             <div class="flex items-center gap-6 text-white text-sm">
                 <span class="flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
-                    Foresta Adventure
+                    For Rest Adventure
                 </span>
 
                 <span class="flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor"><path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1z"/></svg>
                     {{ now()->translatedFormat('d M Y') }}
-                </span>
-
-                <span class="flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="currentColor"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4l2.828 2.829a1 1 0 001.415-1.415L11 9.586V6z"/></svg>
-                    3 menit baca
                 </span>
             </div>
         </div>
@@ -47,10 +38,10 @@
                     <div class="mb-10">
                         <h2 class="text-3xl font-bold text-gray-800 mb-4">CARA SEWA</h2>
                         <h3 class="text-xl font-bold text-gray-700 mb-4">
-                            Panduan Penyewaan Peralatan di Foresta Adventure
+                            Panduan Penyewaan Peralatan di For Rest Adventure
                         </h3>
                         <p class="text-gray-600 leading-relaxed">
-                            Foresta Adventure menyediakan berbagai perlengkapan outdoor berkualitas tinggi.
+                            For Rest Adventure menyediakan berbagai perlengkapan outdoor berkualitas tinggi.
                             Berikut panduan lengkap untuk melakukan penyewaan secara mudah dan cepat.
                         </p>
                     </div>
@@ -143,7 +134,7 @@
                                         WhatsApp
                                     </a>
 
-                                    <a href="{{ route('catalog.index') }}"
+                                    <a href="{{ route('customer.catalog.index') }}"
                                        class="inline-flex items-center bg-white hover:bg-gray-50 text-gray-700 font-semibold px-4 py-2 rounded-lg border border-gray-300 text-sm transition">
                                         Mulai Sewa Sekarang
                                     </a>
@@ -160,24 +151,13 @@
                     <h3 class="text-xl font-bold text-gray-800 mb-6">Artikel Terkait</h3>
 
                     <div class="space-y-6">
-                        <a href="#" class="block group">
+                        {{-- LINK SUDAH DIPERBAIKI --}}
+                        <a href="{{ route('customer.artikel.pengembalian') }}" class="block group">
                             <h4 class="font-bold text-gray-800 group-hover:text-teal-600 transition mb-1">
                                 Cara Pengembalian Alat
                             </h4>
                             <p class="text-sm text-gray-500">
                                 Panduan lengkap mengembalikan peralatan dengan benar.
-                            </p>
-                            <p class="text-xs text-gray-400 mt-1">12 November 2025</p>
-                        </a>
-
-                        <hr class="border-gray-200">
-
-                        <a href="#" class="block group">
-                            <h4 class="font-bold text-gray-800 group-hover:text-teal-600 transition mb-1">
-                                Cara Merawat Peralatan Outdoor
-                            </h4>
-                            <p class="text-sm text-gray-500">
-                                Tips menjaga peralatan agar tetap awet dan aman digunakan.
                             </p>
                             <p class="text-xs text-gray-400 mt-1">12 November 2025</p>
                         </a>

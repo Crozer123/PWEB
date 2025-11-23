@@ -15,6 +15,7 @@ class Rental extends Model
         'total_price',
         'status',
         'snap_token',
+        
     ];
 
     public function user()
