@@ -24,7 +24,7 @@ class StoreRentalRequest extends FormRequest
         return [
             'rental_date' => 'required|date|after_or_equal:today',
             'return_date' => 'required|date|after:rental_date',
-            'items' => 'nullable|array|min:1',
+            'items' => 'required|array|min:1',
             'items.*.item_id' => 'required|integer|exists:items,id', 
             'items.*.quantity' => 'required|integer|min:1',
         ];

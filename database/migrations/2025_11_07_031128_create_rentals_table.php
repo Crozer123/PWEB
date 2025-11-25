@@ -17,7 +17,7 @@
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
                 $table->date('rental_date');
                 $table->date('return_date');
-                $table->timestamp('returned_at')->nullable();
+                // $table->timestamp('returned_at')->nullable();
                 $table->decimal('total_price',12,2)->default(0);
                 $table->enum('status',['pending','rented','returned','canceled'])->default('pending');
                 $table->softDeletes();

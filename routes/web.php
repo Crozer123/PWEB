@@ -67,14 +67,14 @@ Route::middleware(['auth', 'customer'])
             ->name('order.success');
 
         // ===== CART SYSTEM =====
-        Route::post('/cart/add/{item}', [CustomerOrderController::class, 'addToCart'])->name('cart.add');
-        Route::get('/cart', [CustomerOrderController::class, 'cart'])->name('cart');
-        Route::put('/cart/update/{item}', [CustomerOrderController::class, 'updateCart'])->name('cart.update');
-        Route::delete('/cart/remove/{item}', [CustomerOrderController::class, 'removeFromCart'])->name('cart.remove');
+        // Route::post('/cart/add/{item}', [CustomerOrderController::class, 'addToCart'])->name('cart.add');
+        // Route::get('/cart', [CustomerOrderController::class, 'cart'])->name('cart');
+        // Route::put('/cart/update/{item}', [CustomerOrderController::class, 'updateCart'])->name('cart.update');
+        // Route::delete('/cart/remove/{item}', [CustomerOrderController::class, 'removeFromCart'])->name('cart.remove');
 
-        // Multiple checkout via cart
-        Route::get('/checkout', [CustomerOrderController::class, 'create'])
-            ->name('checkout');
+        // // Multiple checkout via cart
+        // Route::get('/checkout', [CustomerOrderController::class, 'create'])
+        //     ->name('checkout');
 
         // Rentals
         Route::prefix('rentals')->name('rentals.')->group(function () {
@@ -102,6 +102,6 @@ Route::middleware(['auth', 'customer'])
             // 2. Route Halaman Pembayaran (SUDAH DIPERBAIKI)
             // Mengarah ke Controller 'showPayment' agar data $rental & Snap Token terkirim ke view
             Route::get('/payment/{rental}', [CustomerOrderController::class, 'showPayment'])
-                ->name('payment.show');
+                ->name('order.payment');
         });
     });

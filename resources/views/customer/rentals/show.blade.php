@@ -46,7 +46,7 @@
 
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
             <h3 class="text-xl font-bold text-gray-800 mb-4">Informasi Penyewaan</h3>
-
+    
             <div class="grid md:grid-cols-2 gap-6 text-sm">
                 <div>
                     <p class="text-gray-500">Tanggal Pesan</p>

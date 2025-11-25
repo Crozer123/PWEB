@@ -38,7 +38,23 @@
             </div>
         </div>
 
+        @if(session('error'))
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+        <strong class="font-bold">Error!</strong>
+        <span class="block sm:inline">{{ session('error') }}</span>
+    </div>
+@endif
 
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+                <strong class="font-bold">Periksa input Anda:</strong>
+                <ul class="list-disc list-inside mt-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <!-- FORM -->
         <div class="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
 
