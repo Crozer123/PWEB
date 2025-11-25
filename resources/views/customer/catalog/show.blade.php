@@ -116,9 +116,18 @@
             <div class="flex flex-col sm:flex-row gap-4 border-t border-slate-100 pt-8">
 
                 @if($item->stock > 0)
+                    <form action="{{ route('customer.cart.add', $item->id) }}" method="POST" class="flex-1">
+                        @csrf
+                        <button type="submit" 
+                            class="w-full bg-white border-2 border-emerald-600 text-emerald-600 font-bold py-4 rounded-xl hover:bg-emerald-50 transition flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            Masukkan Keranjang
+                        </button>
+                    </form>
+                
                     <a href="{{ route('customer.order.single', $item->id) }}"
-                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-emerald-500/30 transition transform hover:-translate-y-1 flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-cart-plus"></i>
+                        class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-emerald-500/30 transition transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-bag-shopping"></i>
                         Sewa Sekarang
                     </a>
                 @else
@@ -127,16 +136,7 @@
                         Stok Habis
                     </button>
                 @endif
-
-
-
-                <!-- Tanya admin -->
-                <a href="https://wa.me/6283869634931?text=Halo,%20saya%20mau%20tanya%20ketersediaan%20{{ urlencode($item->name) }}" 
-                   target="_blank"
-                   class="px-6 py-4 bg-white border-2 border-slate-200 text-slate-600 font-bold rounded-xl hover:border-emerald-500 hover:text-emerald-600 transition flex items-center justify-center gap-2">
-                    <i class="fa-brands fa-whatsapp text-xl"></i>
-                    <span class="hidden sm:inline">Tanya Admin</span>
-                </a>
+                
             </div>
 
             <p class="text-xs text-slate-400 mt-6">

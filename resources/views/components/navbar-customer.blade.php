@@ -42,6 +42,10 @@
                    class="{{ $linkClass }} {{ request()->routeIs('customer.rentals.history') ? $activeC : $inactiveC }}">
                     Pesanan Saya
                 </a>
+                <a href="{{ route('customer.cart') }}" 
+                class="{{ $linkClass }} {{ request()->routeIs('customer.cart') ? $activeC : $inactiveC }} flex items-center gap-1">
+                    <i class="fa-solid fa-cart-shopping"></i> Keranjang
+                </a>
             </div>
 
             <!-- Desktop Profile Dropdown -->

@@ -66,15 +66,11 @@ Route::middleware(['auth', 'customer'])
         Route::get('/order/success/{rental}', [CustomerOrderController::class, 'success'])
             ->name('order.success');
 
-        // ===== CART SYSTEM =====
-        // Route::post('/cart/add/{item}', [CustomerOrderController::class, 'addToCart'])->name('cart.add');
-        // Route::get('/cart', [CustomerOrderController::class, 'cart'])->name('cart');
-        // Route::put('/cart/update/{item}', [CustomerOrderController::class, 'updateCart'])->name('cart.update');
-        // Route::delete('/cart/remove/{item}', [CustomerOrderController::class, 'removeFromCart'])->name('cart.remove');
-
-        // // Multiple checkout via cart
-        // Route::get('/checkout', [CustomerOrderController::class, 'create'])
-        //     ->name('checkout');
+        //Cart
+        Route::post('/cart/add/{item}', [CustomerOrderController::class, 'addToCart'])->name('cart.add');
+        Route::get('/cart', [CustomerOrderController::class, 'cart'])->name('cart');
+        Route::delete('/cart/remove/{cartItem}', [CustomerOrderController::class, 'removeCartItem'])->name('cart.remove');
+        Route::post('/cart/checkout', [CustomerOrderController::class, 'checkoutCart'])->name('cart.checkout');
 
         // Rentals
         Route::prefix('rentals')->name('rentals.')->group(function () {
