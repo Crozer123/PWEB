@@ -10,11 +10,7 @@
         <div class="absolute inset-0 bg-gradient-to-br from-green-900/80 via-blue-900/70 to-gray-900/80"></div>
         
         <!-- Animated Elements -->
-        <div class="absolute top-20 left-10 animate-bounce">
-            <svg class="w-16 h-16 text-white/20" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-7-5z"/>
-            </svg>
-        </div>
+
         <div class="absolute bottom-32 right-20 animate-pulse">
             <svg class="w-20 h-20 text-white/10" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>

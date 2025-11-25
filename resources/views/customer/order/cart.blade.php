@@ -28,7 +28,7 @@
                     <div class="flex gap-4 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm items-center">
                         <div class="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
                             @if($cartItem->item->image)
-                                <img src="{{ asset('storage/' . $cartItem->item->image) }}" class="w-full h-full object-contain">
+                               <img src="{{ \Illuminate\Support\Str::startsWith($cartItem->item->image, 'http') ? $cartItem->item->image : asset('storage/' . $cartItem->item->image) }}" class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-slate-300">
                                     <i class="fa-solid fa-image"></i>

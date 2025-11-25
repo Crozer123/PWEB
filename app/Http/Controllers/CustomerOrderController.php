@@ -12,12 +12,25 @@ use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreRentalRequest;
+use Carbon\Carbon; // Import Carbon untuk manipulasi tanggal
 
 class CustomerOrderController extends Controller
 {
     // ==========================================================
     // BAGIAN 1: FITUR LAMA (Sewa Langsung & Pembayaran)
     // ==========================================================
+
+    // TAMBAHKAN INI: Method untuk Halaman "Pesanan Saya"
+    public function index()
+    {
+        // Ubah ->get() menjadi ->paginate(10)
+        $rentals = Rental::with(['details.item']) // Load relasi details dan item
+                    ->where('user_id', Auth::id())
+                    ->latest()
+                    ->paginate(10); // Gunakan paginate agar ->links() di view berjalan
+
+        return view('customer.order.index', compact('rentals'));
+    }
 
     // Halaman Form Sewa Langsung (Single Item)
     public function createSingle(Item $item)
@@ -29,6 +42,13 @@ class CustomerOrderController extends Controller
     public function store(StoreRentalRequest $request)
     {
         $validated = $request->validated();
+
+        // --- HITUNG DURASI HARI ---
+        $rentalDate = Carbon::parse($validated['rental_date']);
+        $returnDate = Carbon::parse($validated['return_date']);
+        // Menghitung selisih hari + 1 (agar hari pertama dihitung)
+        $days = $rentalDate->diffInDays($returnDate) + 1;
+        // --------------------------
 
         // 1. Ambil item dari hidden input
         $itemsToProcess = [];
@@ -62,7 +82,9 @@ class CustomerOrderController extends Controller
         // 4. Simpan Detail & Kurangi Stok
         foreach ($itemsToProcess as $itemId => $data) {
             $item = Item::find($itemId);
-            $subtotal = $item->rental_price * $data['quantity'];
+            
+            // Perbaiki Rumus: Harga x Jumlah x Durasi Hari
+            $subtotal = $item->rental_price * $data['quantity'] * $days;
             $grandTotal += $subtotal;
 
             RentalDetail::create([
@@ -82,12 +104,18 @@ class CustomerOrderController extends Controller
         return redirect()->route('customer.order.payment', $rental->id);
     }
 
-    // Halaman Pembayaran (Midtrans) - INI YANG HILANG SEBELUMNYA
+    // Halaman Pembayaran (Midtrans)
     public function showPayment(Rental $rental)
     {
         // Pastikan user yang akses adalah pemilik rental
         if ($rental->user_id !== auth()->id()) {
             abort(403, 'Anda tidak memiliki akses ke data pembayaran ini.');
+        }
+
+        // Jika status sudah bukan pending (misal sudah lunas), redirect balik
+        if ($rental->status !== 'pending' && $rental->payment_status === 'paid') {
+            return redirect()->route('customer.dashboard')
+                ->with('info', 'Transaksi ini sudah dibayar.');
         }
 
         // Jika token belum ada, generate snap token baru
@@ -105,6 +133,10 @@ class CustomerOrderController extends Controller
                 'customer_details' => [
                     'first_name' => auth()->user()->name,
                     'email' => auth()->user()->email,
+                ],
+                'enabled_payments' => [
+                    'bca_va', 'bni_va', 'bri_va', 'permata_va', // Virtual Account Bank
+                    'gopay', 'shopeepay', 'qris'               // E-Wallet
                 ],
             ];
 
@@ -197,12 +229,19 @@ class CustomerOrderController extends Controller
             return back()->with('error', 'Keranjang Anda kosong.');
         }
 
+        // --- HITUNG DURASI HARI ---
+        $rentalDate = Carbon::parse($request->rental_date);
+        $returnDate = Carbon::parse($request->return_date);
+        $days = $rentalDate->diffInDays($returnDate) + 1;
+        // --------------------------
+
         $grandTotal = 0;
         foreach ($cart->items as $ci) {
             if ($ci->item->stock < $ci->quantity) {
                 return back()->with('error', "Stok untuk {$ci->item->name} tidak mencukupi.");
             }
-            $grandTotal += $ci->item->rental_price * $ci->quantity;
+            // Perbaiki Rumus: Harga x Jumlah x Durasi Hari
+            $grandTotal += $ci->item->rental_price * $ci->quantity * $days;
         }
 
         // Buat Transaksi Rental
@@ -220,7 +259,8 @@ class CustomerOrderController extends Controller
                 'rental_id' => $rental->id,
                 'item_id' => $ci->item_id,
                 'quantity' => $ci->quantity,
-                'subtotal_price' => $ci->item->rental_price * $ci->quantity
+                // Perbaiki Rumus: Harga x Jumlah x Durasi Hari
+                'subtotal_price' => $ci->item->rental_price * $ci->quantity * $days
             ]);
 
             // Kurangi Stok Barang
@@ -232,5 +272,35 @@ class CustomerOrderController extends Controller
 
         // Redirect ke Pembayaran
         return redirect()->route('customer.order.payment', $rental->id);
+    }
+
+    // ==========================================================
+    // BAGIAN 3: PROSES PEMBAYARAN COD (BARU DITAMBAHKAN)
+    // ==========================================================
+
+    /**
+     * Memproses pilihan pembayaran COD.
+     */
+    public function processCod(Request $request, Rental $rental)
+    {
+        // 1. Validasi Kepemilikan
+        if ($rental->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // 2. Validasi Status (Hanya bisa jika status masih pending)
+        if ($rental->status !== 'pending') {
+            return back()->with('error', 'Status pesanan tidak valid untuk perubahan metode pembayaran.');
+        }
+
+        // 3. Update Data Rental
+        $rental->update([
+            'payment_method' => 'cod', // Set metode ke COD
+            // Status biarkan 'pending' karena menunggu konfirmasi admin saat barang diambil
+        ]);
+
+        // 4. Redirect dengan Pesan Sukses
+        return redirect()->route('customer.dashboard')
+            ->with('success', 'Metode pembayaran COD berhasil dipilih. Silakan lakukan pembayaran tunai saat mengambil barang di toko.');
     }
 }

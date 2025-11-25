@@ -80,9 +80,9 @@
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-14 w-14 relative">
                                         @if($item->image)
-                                            <img class="h-14 w-14 rounded-xl object-cover shadow-sm border border-slate-100 group-hover:scale-105 transition duration-300"
-                                                 src="{{ asset('storage/' . $item->image) }}"
-                                                 alt="{{ $item->name }}">
+                                           <img class="h-14 w-14 rounded-xl object-cover shadow-sm border border-slate-100 group-hover:scale-105 transition duration-300"
+                                            src="{{ \Illuminate\Support\Str::startsWith($item->image, 'http') ? $item->image : asset('storage/' . $item->image) }}"
+                                            alt="{{ $item->name }}">
                                         @else
                                             <div class="h-14 w-14 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200">
                                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>

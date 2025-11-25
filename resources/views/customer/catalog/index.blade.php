@@ -71,9 +71,9 @@
 
                             <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-50 mb-4 flex items-center justify-center">
                                 @if($item->image)
-                                    <img src="{{ asset('storage/' . $item->image) }}"
-                                         alt="{{ $item->name }}"
-                                         class="w-full h-full object-contain p-2 group-hover:scale-110 transition duration-500">
+                                  <img src="{{ Str::startsWith($item->image, 'http') ? $item->image : asset('storage/' . $item->image) }}"
+                                    alt="{{ $item->name }}"
+                                    class="w-full h-full object-cover p-2 group-hover:scale-110 transition duration-500">
                                 @else
                                     <i class="fa-solid fa-image text-4xl text-gray-300"></i>
                                 @endif

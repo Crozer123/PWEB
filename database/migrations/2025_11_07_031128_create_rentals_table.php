@@ -19,6 +19,7 @@
                 $table->date('return_date');
                 // $table->timestamp('returned_at')->nullable();
                 $table->decimal('total_price',12,2)->default(0);
+                $table->string('payment_method')->nullable();
                 $table->enum('status',['pending','rented','returned','canceled'])->default('pending');
                 $table->softDeletes();
                 $table->timestamps();

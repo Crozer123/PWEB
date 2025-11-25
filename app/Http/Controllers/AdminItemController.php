@@ -6,7 +6,7 @@ use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
 use App\Models\Category;
 use App\Models\Item;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Storage; // Pastikan pakai ini, bukan Cloudinary
 
 class AdminItemController extends Controller
 {
@@ -39,6 +39,8 @@ class AdminItemController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
+            // Simpan ke storage lokal (public disk)
+            // Path hasil: storage/app/public/images/items/namafileacak.jpg
             $data['image'] = $request->file('image')
                 ->store('images/items', 'public');
         }
@@ -76,11 +78,12 @@ class AdminItemController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-
+            // Hapus gambar lama jika ada di storage lokal
             if ($item->image) {
                 Storage::disk('public')->delete($item->image);
             }
 
+            // Upload gambar baru
             $data['image'] = $request->file('image')
                 ->store('images/items', 'public');
         }
@@ -103,6 +106,7 @@ class AdminItemController extends Controller
                 ->with('error', 'Barang tidak dapat dihapus karena pernah/sedang disewa.');
         }
 
+        // Hapus file fisik dari storage
         if ($item->image) {
             Storage::disk('public')->delete($item->image);
         }

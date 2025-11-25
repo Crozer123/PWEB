@@ -74,8 +74,11 @@ Route::middleware(['auth', 'customer'])
 
         // Rentals
         Route::prefix('rentals')->name('rentals.')->group(function () {
-            Route::get('/history', [CustomerController::class, 'rentalHistory'])->name('history');
-            Route::get('/{rental}', [CustomerController::class, 'showRental'])->name('show');
+            // Arahkan ke CustomerRentalController method index
+            Route::get('/history', [CustomerRentalController::class, 'index'])->name('history');
+            
+            // Arahkan ke CustomerRentalController method show
+            Route::get('/{rental}', [CustomerRentalController::class, 'show'])->name('show');
         });
 
         // Profile
@@ -99,5 +102,6 @@ Route::middleware(['auth', 'customer'])
             // Mengarah ke Controller 'showPayment' agar data $rental & Snap Token terkirim ke view
             Route::get('/payment/{rental}', [CustomerOrderController::class, 'showPayment'])
                 ->name('order.payment');
+            Route::patch('/payment/{rental}/cod', [CustomerOrderController::class, 'processCod'])->name('payment.cod');
         });
     });

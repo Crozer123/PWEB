@@ -15,56 +15,51 @@ class CustomerRentalController extends Controller
     {
         $rentals = Rental::where('user_id', Auth::id())
                         ->where('status', '!=', 'pending') 
-                        ->with('items') // Pastikan relasi items ada
+                        ->with('items') 
                         ->orderBy('created_at', 'desc')
                         ->paginate(10);
 
-        return view('customer.rentals.index', compact('rentals')); 
+        // PERBAIKAN: Ubah view menjadi 'customer.rentals.history' sesuai nama file Anda
+        return view('customer.rentals.history', compact('rentals')); 
     }
     
     public function show(Rental $rental)
     {
+        // Pastikan user hanya bisa melihat rental miliknya sendiri
         if ($rental->user_id !== Auth::id()) {
             abort(403, 'Akses ditolak.');
         }
         
+        // Memuat relasi items agar tidak error saat looping di view
+        $rental->load('items'); 
+        
         return view('customer.rentals.show', compact('rental'));
     }
+
+    // ... method cart, addToCart, dll biarkan tetap sama ...
     public function cart()
     {
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
         $items = $cart->items()->with('item')->get();
-
         return view('customer.cart.index', compact('cart', 'items'));
     }
 
-     public function addToCart(Item $item)
+    public function addToCart(Item $item)
     {
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-
-        $existing = CartItem::where('cart_id', $cart->id)
-                            ->where('item_id', $item->id)
-                            ->first();
+        $existing = CartItem::where('cart_id', $cart->id)->where('item_id', $item->id)->first();
 
         if ($existing) {
             $existing->increment('quantity');
         } else {
-            CartItem::create([
-                'cart_id' => $cart->id,
-                'item_id' => $item->id,
-                'quantity' => 1,
-            ]);
+            CartItem::create(['cart_id' => $cart->id, 'item_id' => $item->id, 'quantity' => 1]);
         }
-
         return back()->with('success', 'Ditambahkan ke keranjang!');
     }
 
     public function updateCart(Request $request, CartItem $cartItem)
     {
-        $cartItem->update([
-            'quantity' => $request->quantity
-        ]);
-
+        $cartItem->update(['quantity' => $request->quantity]);
         return back()->with('success', 'Jumlah berhasil diperbarui.');
     }
 
@@ -77,15 +72,11 @@ class CustomerRentalController extends Controller
     public function checkout()
     {
         $cart = Cart::where('user_id', Auth::id())->first();
-
         if (!$cart || $cart->items->count() < 1) {
             return redirect()->back()->with('error', 'Keranjang kosong.');
         }
 
-        $rental = Rental::create([
-            'user_id' => Auth::id(),
-            'status'  => 'pending',
-        ]);
+        $rental = Rental::create(['user_id' => Auth::id(), 'status'  => 'pending']);
 
         foreach ($cart->items as $itemRow) {
             RentalDetail::create([
@@ -93,21 +84,16 @@ class CustomerRentalController extends Controller
                 'item_id'   => $itemRow->item_id,
                 'quantity'  => $itemRow->quantity,
             ]);
-
             $itemRow->item->decrement('stock', $itemRow->quantity);
         }
 
-        // Kosongkan keranjang
         $cart->items()->delete();
-
         return redirect()->route('customer.order.success', $rental->id);
     }
 
     public function success(Rental $rental)
     {
         if ($rental->user_id !== Auth::id()) abort(403);
-
         return view('customer.order.success', compact('rental'));
-}
-
+    }
 }
