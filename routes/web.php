@@ -91,6 +91,6 @@ Route::middleware(['auth', 'customer'])
 
         Route::prefix('payment')->name('order.')->group(function() {
             Route::get('/{rental}', [CustomerOrderController::class, 'showPayment'])->name('payment');
-            Route::patch('/{rental}/cod', [CustomerOrderController::class, 'processCod'])->name('payment.cod'); // Jika masih pakai COD
+            Route::patch('/{rental}/cod', [CustomerOrderController::class, 'processCod'])->name('payment.cod'); 
         });
     });
