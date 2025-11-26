@@ -27,7 +27,7 @@
                     <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                     <select name="category_id" id="category_id" required
                             class="w-full rounded-lg border px-4 py-2 outline-none transition focus:ring-2 {{ $errors->has('category_id') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500' }}">
-                        <option value="">-- Pilih Kategori --</option>
+                        <option value=""> Pilih Kategori </option>
                         @foreach ($categories as $category)
                             <option value="{{ $category->id }}" @if (old('category_id', $item->category_id ?? '') == $category->id) selected @endif>{{ $category->name }}</option>
                         @endforeach

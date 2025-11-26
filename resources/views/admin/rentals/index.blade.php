@@ -9,7 +9,6 @@
         </div>
         
         <div class="flex gap-2">
-             {{-- <button class="px-4 py-2 bg-white border rounded-lg text-sm font-medium hover:bg-gray-50">Filter</button> --}}
         </div>
     </div>
 
@@ -36,8 +35,16 @@
 
                         <td class="p-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                                    {{ substr($r->user->name, 0, 1) }}
+                                <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+                                    @if(!empty($r->user->avatar))
+                                        <img src="{{ asset('storage/' . $r->user->avatar) }}" 
+                                             alt="{{ $r->user->name }}" 
+                                             class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                                            {{ substr($r->user->name, 0, 1) }}
+                                        </div>
+                                    @endif
                                 </div>
                                 <span class="font-medium text-gray-900">{{ $r->user->name }}</span>
                             </div>
@@ -63,8 +70,10 @@
                         </td>
 
                         <td class="p-4 text-sm text-gray-500">
-                            {{ \Carbon\Carbon::parse($r->rental_date)->format('d M Y') }}
-                            <div class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($r->rental_date)->format('H:i') }} WIB</div>
+                            {{ \Carbon\Carbon::parse($r->rental_date)->translatedFormat('d M Y') }}
+                            <div class="text-xs text-gray-400">
+                                {{ \Carbon\Carbon::parse($r->created_at)->format('H:i') }} WIB
+                            </div>
                         </td>
 
                         <td class="p-4 text-right">
@@ -85,17 +94,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </a>
-
-                                <form action="{{ route('admin.rentals.destroy', $r->id) }}" method="POST" class="inline-block">
-                                    @csrf @method('DELETE')
-                                    <button type="button" onclick="confirmDelete(this)" 
-                                            class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
-                                            title="Hapus">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </form>
                             </div>
                         </td>
                     </tr>
@@ -123,11 +121,4 @@
     </div>
 </div>
 
-<script>
-    function confirmDelete(button) {
-        if (confirm('Apakah Anda yakin ingin menghapus data penyewaan ini? Data tidak dapat dikembalikan.')) {
-            button.closest('form').submit();
-        }
-    }
-</script>
 @endsection

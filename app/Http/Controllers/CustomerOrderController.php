@@ -90,10 +90,6 @@ class CustomerOrderController extends Controller
             return redirect()->route('customer.dashboard')
                 ->with('info', 'Transaksi ini sudah dibayar.');
         }
-
-        // Logika Midtrans (Config & Snap Token) telah dihapus.
-        // Langsung tampilkan view pembayaran.
-
         return view('customer.order.payment', compact('rental'));
     }
 

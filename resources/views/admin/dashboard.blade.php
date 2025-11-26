@@ -20,7 +20,6 @@
         <div class="relative z-10 px-8 md:px-12 w-full flex flex-col md:flex-row justify-between items-center gap-6">
 
             @php
-                $hour = now()->format('H');
                 $hour = now()->setTimezone('Asia/Jakarta')->format('H');
                 if ($hour < 12) {
                     $greeting = 'Selamat Pagi';
@@ -67,7 +66,7 @@
                 <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl group-hover:scale-110 transition shadow-sm">
                     <i class="fa-solid fa-person-hiking"></i>
                 </div>
-                @if($activeRentals > 0)
+                @if(($activeRentals ?? 0) > 0)
                     <span class="flex h-3 w-3 relative">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
@@ -75,7 +74,7 @@
                 @endif
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800">{{ $activeRentals }}</h3>
+                <h3 class="text-3xl font-bold text-slate-800">{{ $activeRentals ?? 0 }}</h3>
                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Sedang Disewa</p>
             </div>
         </div>
@@ -87,7 +86,7 @@
                 </div>
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800">{{ $totalItems }}</h3>
+                <h3 class="text-3xl font-bold text-slate-800">{{ $totalItems ?? 0 }}</h3>
                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Total Gear</p>
             </div>
         </div>
@@ -99,7 +98,7 @@
                 </div>
             </div>
             <div>
-                <h3 class="text-3xl font-bold text-slate-800">{{ $totalUsers }}</h3>
+                <h3 class="text-3xl font-bold text-slate-800">{{ $totalUsers ?? 0 }}</h3>
                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Sobat Petualang</p>
             </div>
         </div>
@@ -112,7 +111,7 @@
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-bold text-slate-800">{{ $lowStockCount }}</h3>
+                    <h3 class="text-3xl font-bold text-slate-800">{{ $lowStockCount ?? 0 }}</h3>
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Perlu Restock</p>
                 </div>
             </div>
@@ -122,7 +121,7 @@
     {{-- MAIN CONTENT --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-        {{-- Riwayat --}}
+        {{-- Riwayat Transaksi Terkini --}}
         <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
             <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white">
                 <h3 class="font-bold text-lg text-slate-800">Transaksi Terkini</h3>
@@ -132,7 +131,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                @if ($recentRentals->count() === 0)
+                @if (!isset($recentRentals) || $recentRentals->count() === 0)
                     <div class="flex flex-col items-center justify-center py-16 text-center px-4">
                         <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 text-4xl mb-4">
                             <i class="fa-solid fa-mug-hot"></i>
@@ -153,9 +152,27 @@
                         <tr class="hover:bg-slate-50/80 transition group cursor-pointer" onclick="window.location='{{ route('admin.rentals.show', $rental->id) }}'">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-700 flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">
-                                        {{ substr($rental->user->name ?? 'User', 0, 2) }}
+                                    {{-- PERBAIKAN FOTO PROFIL DI SINI --}}
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
+                                        @php
+                                            // Cek berbagai kemungkinan nama kolom foto di database
+                                            $photo = $rental->user->avatar ?? $rental->user->photo ?? $rental->user->profile_photo_path ?? null;
+                                        @endphp
+                                    
+                                        @if(!empty($photo))
+                                            {{-- Jika ada foto, tampilkan --}}
+                                            <img src="{{ asset('storage/' . $photo) }}" 
+                                                 alt="{{ $rental->user->name ?? 'User' }}" 
+                                                 class="w-full h-full object-cover">
+                                        @else
+                                            {{-- Jika tidak ada foto, tampilkan inisial (Warna Biru Muda) --}}
+                                            <div class="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 flex items-center justify-center text-xs font-bold">
+                                                {{ substr($rental->user->name ?? 'U', 0, 1) }}
+                                            </div>
+                                        @endif
                                     </div>
+                                    {{-- AKHIR PERBAIKAN --}}
+
                                     <div>
                                         <div class="font-bold text-slate-700">{{ $rental->user->name ?? 'Unknown User' }}</div>
                                         <div class="text-[11px] text-slate-400">
@@ -173,7 +190,6 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                {{-- Menggunakan details->sum('quantity') karena relasi yang benar adalah details --}}
                                 <span class="font-bold text-slate-800">{{ $rental->details->sum('quantity') }}</span> Unit
                             </td>
                         </tr>
@@ -184,19 +200,19 @@
             </div>
         </div>
 
-        {{-- Low Stock --}}
+        {{-- Low Stock Widget --}}
         <div class="space-y-8">
             <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-slate-800">Stok Menipis</h3>
-                    @if($lowStockCount > 0)
+                    @if(($lowStockCount ?? 0) > 0)
                         <span class="bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-1 rounded-md animate-pulse">
-                            {{ $lowStockCount }} Item Kritis
+                            {{ $lowStockCount }} Stok mau habis
                         </span>
                     @endif
                 </div>
 
-                @if ($lowStockList->count() === 0)
+                @if (!isset($lowStockList) || $lowStockList->count() === 0)
                     <div class="py-6 text-center">
                         <p class="text-sm text-emerald-600 font-medium">
                             <i class="fa-solid fa-check-circle mr-1"></i> Aman, stok melimpah!

@@ -18,11 +18,10 @@ class Rental extends Model
         
     ];
 
-    // TAMBAHKAN INI (CASTING)
     protected $casts = [
         'rental_date' => 'date',
         'return_date' => 'date',
-        'total_price' => 'decimal:2', // Opsional: agar harga jadi angka presisi
+        'total_price' => 'decimal:2', 
     ];
 
     public function user()

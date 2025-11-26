@@ -19,7 +19,6 @@ class AdminRentalController extends Controller
 
     public function show(Rental $rental)
     {
-        // Pastikan relasi details.item dimuat untuk akses stok
         $rental->load('details.item', 'user');
         return view('admin.rentals.show', compact('rental'));
     }
@@ -34,7 +33,6 @@ class AdminRentalController extends Controller
         $old = $rental->status;
         $new = $request->status;
 
-        // KASUS 1: Barang Dikembalikan (Rented -> Returned)
         if ($new === 'returned' && $old !== 'returned') {
             foreach ($rental->details as $detail) {
                 $detail->item->increment('stock', $detail->quantity);
@@ -42,8 +40,6 @@ class AdminRentalController extends Controller
             $rental->returned_at = now();
         }
 
-        // KASUS 2: Admin Membatalkan Pesanan (Pending/Rented -> Canceled)
-        // Menggunakan 'canceled' (satu L) sesuai database
         if ($new === 'canceled' && $old !== 'canceled') {
             foreach ($rental->details as $detail) {
                 $detail->item->increment('stock', $detail->quantity);
@@ -59,17 +55,4 @@ class AdminRentalController extends Controller
             ->with('success', 'Status rental berhasil diperbarui.');
     }
 
-    public function destroy(Rental $rental)
-    {
-        // PERBAIKAN DISINI: Ganti 'active' jadi 'rented'
-        if (in_array($rental->status, ['pending', 'rented'])) {
-            foreach ($rental->details as $detail) {
-                $detail->item->increment('stock', $detail->quantity);
-            }
-        }
-
-        $rental->delete();
-
-        return back()->with('success', 'Rental berhasil dihapus (diarsipkan).');
-    }
 }

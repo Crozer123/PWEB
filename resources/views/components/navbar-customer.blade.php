@@ -22,6 +22,9 @@
                     $linkClass = "text-sm font-medium transition border-b-2";
                     $activeC = "border-emerald-500 text-emerald-700";
                     $inactiveC = "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300";
+                    
+                    // Logika Foto Profil (Universal)
+                    $userPhoto = Auth::user()->avatar ?? Auth::user()->photo ?? Auth::user()->profile_photo_path;
                 @endphp
 
                 <a href="{{ route('customer.dashboard') }}" 
@@ -34,7 +37,9 @@
                     Katalog
                 </a>
 
-                <a href="{{ route('customer.artikel.carasewa') }}" class="block py-2 text-gray-700 font-medium">
+                {{-- PERBAIKAN: Font Cara Sewa disamakan --}}
+                <a href="{{ route('customer.artikel.carasewa') }}" 
+                   class="{{ $linkClass }} {{ request()->routeIs('customer.artikel.carasewa') ? $activeC : $inactiveC }}">
                     Cara Sewa
                 </a>
 
@@ -54,8 +59,17 @@
                 <!-- Tombol open profile menu -->
                 <button @click="profileOpen = !profileOpen"
                         class="flex items-center gap-2 hover:bg-gray-50 px-3 py-1.5 rounded-full transition border border-transparent hover:border-gray-200">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=10b981&color=fff" 
-                         class="w-8 h-8 rounded-full">
+                    
+                    {{-- LOGIKA FOTO PROFIL DESKTOP --}}
+                    @if(!empty($userPhoto))
+                        <img src="{{ asset('storage/' . $userPhoto) }}" 
+                             class="w-8 h-8 rounded-full object-cover border border-gray-200" 
+                             alt="{{ Auth::user()->name }}">
+                    @else
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=10b981&color=fff" 
+                             class="w-8 h-8 rounded-full">
+                    @endif
+
                     <span class="font-medium text-sm text-gray-700">{{ Auth::user()->name }}</span>
 
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,8 +133,7 @@
             Katalog
         </a>
 
-         <a href="{{ route('customer.artikel.carasewa') }}" 
-        class="{{ $linkClass }} {{ request()->routeIs('customer.carasewa') ? $activeC : $inactiveC }}">
+         <a href="{{ route('customer.artikel.carasewa') }}" class="block py-2 text-gray-700 font-medium">
             Cara Sewa
         </a>
 
@@ -137,8 +150,17 @@
         <!-- Bagian profil + logout -->
         <div class="border-t pt-2 mt-2">
             <div class="flex items-center gap-2 mb-3">
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}" 
-                     class="w-8 h-8 rounded-full">
+                
+                {{-- LOGIKA FOTO PROFIL MOBILE --}}
+                @if(!empty($userPhoto))
+                    <img src="{{ asset('storage/' . $userPhoto) }}" 
+                         class="w-8 h-8 rounded-full object-cover border border-gray-200" 
+                         alt="{{ Auth::user()->name }}">
+                @else
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=10b981&color=fff" 
+                         class="w-8 h-8 rounded-full">
+                @endif
+                
                 <span class="font-bold text-gray-800">{{ Auth::user()->name }}</span>
             </div>
 
