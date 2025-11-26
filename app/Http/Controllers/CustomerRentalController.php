@@ -11,15 +11,19 @@ use Illuminate\Support\Facades\Auth;
 
 class CustomerRentalController extends Controller
 {
-    public function index()
+   public function index()
     {
         $rentals = Rental::where('user_id', Auth::id())
-                        ->where('status', '!=', 'pending') 
-                        ->with('items') 
-                        ->orderBy('created_at', 'desc')
+                        // Baris di bawah ini DIHAPUS agar semua status (termasuk pending) muncul
+                        // ->where('status', '!=', 'pending') 
+                        
+                        // Gunakan 'details.item' agar konsisten dengan CustomerController
+                        // (Kecuali jika Anda yakin model Rental punya relasi 'items')
+                        ->with('details.item') 
+                        
+                        ->latest() // Shortcut untuk orderBy created_at desc
                         ->paginate(10);
 
-        // PERBAIKAN: Ubah view menjadi 'customer.rentals.history' sesuai nama file Anda
         return view('customer.rentals.history', compact('rentals')); 
     }
     

@@ -75,7 +75,7 @@
                       class="space-y-6">
                     
                     @csrf
-                    @method('PUT')
+                   
 
                     <!-- Profile Picture Upload -->
                     <div>

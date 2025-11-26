@@ -55,8 +55,6 @@ Route::middleware(['auth', 'customer'])
             Route::get('/', [CustomerCatalogController::class, 'index'])->name('index');
             Route::get('/{item}', [CustomerCatalogController::class, 'show'])->name('show');
         });
-
-        // ===== ORDER (Single Checkout) =====
         Route::get('/order/create/{item}', [CustomerOrderController::class, 'createSingle'])
             ->name('order.single');
 
@@ -74,17 +72,15 @@ Route::middleware(['auth', 'customer'])
 
         // Rentals
         Route::prefix('rentals')->name('rentals.')->group(function () {
-            // Arahkan ke CustomerRentalController method index
+
             Route::get('/history', [CustomerRentalController::class, 'index'])->name('history');
-            
-            // Arahkan ke CustomerRentalController method show
             Route::get('/{rental}', [CustomerRentalController::class, 'show'])->name('show');
         });
 
         // Profile
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', [CustomerController::class, 'editProfile'])->name('edit');
-            Route::put('/update', [CustomerController::class, 'updateProfile'])->name('update');
+            Route::post('/update', [CustomerController::class, 'updateProfile'])->name('update');
         });
 
         Route::put('/password/update', [CustomerController::class, 'updatePassword'])->name('password.update');
@@ -93,15 +89,8 @@ Route::middleware(['auth', 'customer'])
             return view('customer.artikel.pengembalian');
         })->name('artikel.pengembalian');
 
-        Route::middleware(['midtrans_config'])->group(function () {
-            
-            // 1. Route Generate Token (Opsional jika pakai controller showPayment)
-            Route::post('/get-snap-token', [CustomerOrderController::class, 'getSnapToken']);
-            
-            // 2. Route Halaman Pembayaran (SUDAH DIPERBAIKI)
-            // Mengarah ke Controller 'showPayment' agar data $rental & Snap Token terkirim ke view
-            Route::get('/payment/{rental}', [CustomerOrderController::class, 'showPayment'])
-                ->name('order.payment');
-            Route::patch('/payment/{rental}/cod', [CustomerOrderController::class, 'processCod'])->name('payment.cod');
+        Route::prefix('payment')->name('order.')->group(function() {
+            Route::get('/{rental}', [CustomerOrderController::class, 'showPayment'])->name('payment');
+            Route::patch('/{rental}/cod', [CustomerOrderController::class, 'processCod'])->name('payment.cod'); // Jika masih pakai COD
         });
     });
